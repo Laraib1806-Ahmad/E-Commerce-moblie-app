@@ -1,0 +1,22 @@
+node_modules/
+.env
+dist/
+*.log
+
+
+# Backend
+ecommerce-backend/node_modules/
+ecommerce-backend/.env
+ecommerce-backend/uploads/*
+!ecommerce-backend/uploads/.gitkeep
+
+# Mobile
+ecommerce-mobile/node_modules/
+ecommerce-mobile/.expo/
+ecommerce-mobile/.env
+ecommerce-mobile/dist/
+ecommerce-mobile/web-build/
+
+# General
+.DS_Store
+Thumbs.db

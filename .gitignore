@@ -17,3 +17,5 @@ ecommerce-mobile/web-build/
 # General
 .DS_Store
 Thumbs.db
+config.bat
+node_modules

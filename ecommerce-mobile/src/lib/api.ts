@@ -7,8 +7,8 @@ import {
 } from "../types/admin";
 import { Brand, Product } from "../types/product";
 
-export const BASE_URL = "http://192.168.100.218:9999";
-
+export const BASE_URL =
+  process.env.EXPO_PUBLIC_API_URL ?? "http://192.168.100.217:9999";
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
   const res = await fetch(`${BASE_URL}${path}`, init);
   let body: any = null;

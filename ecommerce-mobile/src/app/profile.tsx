@@ -1,13 +1,12 @@
 import { AppColors as Colors } from "@/constants/colors";
-import { logout } from "@/store/authSlice";
-import { useAppDispatch, useAppSelector } from "@/store/hooks";
+import { signOut } from "@/lib/auth";
+import { useAppSelector } from "@/store/hooks";
 import { useRouter } from "expo-router";
 import { StyleSheet, Text, TouchableOpacity } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function ProfileScreen() {
   const user = useAppSelector((s) => s.auth.user);
-  const dispatch = useAppDispatch();
   const router = useRouter();
 
   return (
@@ -22,10 +21,7 @@ export default function ProfileScreen() {
         <Text style={styles.rowText}>Favorites</Text>
       </TouchableOpacity>
 
-      <TouchableOpacity
-        style={styles.logoutBtn}
-        onPress={() => dispatch(logout())}
-      >
+      <TouchableOpacity style={styles.logoutBtn} onPress={() => signOut()}>
         <Text style={styles.logoutText}>Logout</Text>
       </TouchableOpacity>
     </SafeAreaView>
@@ -33,9 +29,21 @@ export default function ProfileScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 20, backgroundColor: Colors.background },
-  name: { fontSize: 24, fontWeight: "700", color: Colors.text },
-  email: { color: Colors.mutedText, marginTop: 4, marginBottom: 24 },
+  container: {
+    flex: 1,
+    padding: 20,
+    backgroundColor: Colors.background,
+  },
+  name: {
+    fontSize: 24,
+    fontWeight: "700",
+    color: Colors.text,
+  },
+  email: {
+    color: Colors.mutedText,
+    marginTop: 4,
+    marginBottom: 24,
+  },
   row: {
     backgroundColor: Colors.white,
     borderRadius: 14,
@@ -44,7 +52,11 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "#eee",
   },
-  rowText: { fontSize: 15, color: Colors.text, fontWeight: "600" },
+  rowText: {
+    fontSize: 15,
+    color: Colors.text,
+    fontWeight: "600",
+  },
   logoutBtn: {
     marginTop: 30,
     backgroundColor: Colors.lightPeach,
@@ -52,5 +64,8 @@ const styles = StyleSheet.create({
     borderRadius: 14,
     alignItems: "center",
   },
-  logoutText: { color: Colors.darkOlive, fontWeight: "700" },
+  logoutText: {
+    color: Colors.darkOlive,
+    fontWeight: "700",
+  },
 });

@@ -52,6 +52,7 @@ export default function AppTabs() {
         <NativeTabs.Trigger name="orders" hidden />
         <NativeTabs.Trigger name="profile" hidden />
         <NativeTabs.Trigger name="favorites" hidden />
+        <NativeTabs.Trigger name="checkout" hidden />
       </NativeTabs>
     );
   }

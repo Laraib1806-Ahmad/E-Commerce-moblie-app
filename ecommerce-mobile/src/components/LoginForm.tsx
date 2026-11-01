@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { signIn } from "@/lib/auth";
 import {
   View,
   Text,
@@ -19,15 +20,22 @@ export function LoginForm({
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  const handleLogin = () => {
+  const handleLogin = async () => {
     if (!email || !password) {
       setError("Please enter both email and password");
       return;
     }
-
-    const role = email.toLowerCase().includes("admin") ? "admin" : "user";
-    dispatch(login({ id: "1", name: email.split("@")[0], email, role }));
+    setError("");
+    setLoading(true);
+    try {
+      await signIn(email.trim(), password);
+    } catch (e: any) {
+      setError(e.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -53,7 +61,11 @@ export function LoginForm({
         style={styles.input}
       />
 
-      <TouchableOpacity style={styles.button} onPress={handleLogin}>
+      <TouchableOpacity
+        style={styles.button}
+        onPress={handleLogin}
+        disabled={loading}
+      >
         <Text style={styles.buttonText}>Login</Text>
       </TouchableOpacity>
 

@@ -3,6 +3,9 @@ import { AppColors as Colors } from "../constants/colors";
 import { useAppDispatch } from "../store/hooks";
 import { toggleFavorite } from "../store/productsSlice";
 import { Product } from "../types/product";
+import { useQueryClient } from "@tanstack/react-query";
+import { updateProduct } from "../lib/api";
+
 export function ProductCard({
   product,
   onPress,
@@ -13,8 +16,32 @@ export function ProductCard({
   onToggleFavorite?: () => void;
 }) {
   const dispatch = useAppDispatch();
+  const queryClient = useQueryClient();
+
   const handleFavorite =
-    onToggleFavorite ?? (() => dispatch(toggleFavorite(product)));
+    onToggleFavorite ??
+    (async () => {
+      const next = !product.favorite;
+      // Update every cached products list instantly.
+      queryClient.setQueriesData(
+        { queryKey: ["products"] },
+        (old: any) =>
+          old && {
+            ...old,
+            pages: old.pages.map((pg: any) => ({
+              ...pg,
+              data: pg.data.map((p: Product) =>
+                p.id === product.id ? { ...p, favorite: next } : p,
+              ),
+            })),
+          },
+      );
+      try {
+        await updateProduct(product.id, { favorite: next });
+      } catch {
+        queryClient.invalidateQueries({ queryKey: ["products"] });
+      }
+    });
 
   return (
     <TouchableOpacity style={styles.card} onPress={onPress} activeOpacity={0.9}>

@@ -9,6 +9,7 @@ import {
 import { useAppDispatch } from "../store/hooks";
 import { register, Role } from "../store/authSlice";
 import { AppColors as Colors } from "../constants/colors";
+import { signUp } from "../lib/auth";
 
 export function RegisterForm({
   onSwitchToLogin,
@@ -21,13 +22,29 @@ export function RegisterForm({
   const [password, setPassword] = useState("");
   const [role, setRole] = useState<Role>("user");
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  const handleRegister = () => {
+  const handleRegister = async () => {
     if (!name || !email || !password) {
       setError("Fill all fields");
       return;
     }
-    dispatch(register({ id: Date.now().toString(), name, email, role }));
+    if (password.length < 6) {
+      setError("Password must be at least 6 characters");
+      return;
+    }
+    setError("");
+    setLoading(true);
+    try {
+      const session = await signUp(name.trim(), email.trim(), password);
+      if (!session) {
+        setError("Check your email to confirm your account, then log in.");
+      }
+    } catch (e: any) {
+      setError(e.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -59,8 +76,8 @@ export function RegisterForm({
         style={styles.input}
       />
 
-      <Text style={styles.label}>I am </Text>
-      <View style={styles.roleRow}>
+      {/* <Text style={styles.label}>I am </Text> 
+       <View style={styles.roleRow}>
         <TouchableOpacity
           style={[styles.roleChip, role === "user" && styles.roleChipActive]}
           onPress={() => setRole("user")}
@@ -81,7 +98,7 @@ export function RegisterForm({
             Admin
           </Text>
         </TouchableOpacity>
-      </View>
+      </View> */}
 
       <TouchableOpacity style={styles.button} onPress={handleRegister}>
         <Text style={styles.buttonText}>Register</Text>

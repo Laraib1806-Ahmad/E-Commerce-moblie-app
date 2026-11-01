@@ -136,7 +136,9 @@ export function FiltersModal({
               <Text style={styles.label}>Favorites only</Text>
               <Switch
                 value={filters.favoriteOnly}
-                onValueChange={(v) => dispatch(setFavoriteOnly(v))}
+                onValueChange={(v) => {
+                  dispatch(setFavoriteOnly(v));
+                }}
                 trackColor={{ true: Colors.olive, false: "#ddd" }}
               />
             </View>

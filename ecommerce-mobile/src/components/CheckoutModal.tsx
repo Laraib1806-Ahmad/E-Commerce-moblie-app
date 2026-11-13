@@ -17,7 +17,7 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { confirmOrder, createCheckout } from "@/lib/orders";
+import { waitUntilPaid, createCheckout } from "@/lib/orders";
 import { useQueryClient } from "@tanstack/react-query";
 import { useStripe } from "@stripe/stripe-react-native";
 import { useState } from "react";
@@ -80,7 +80,19 @@ export function CheckoutModal({
         return;
       }
 
-      await confirmOrder(orderId);
+      // Stripe tells the server about the payment through the webhook. Wait for it.
+      const paid = await waitUntilPaid(orderId);
+
+      reset();
+      onClose();
+      dispatch(clearCart());
+      queryClient.invalidateQueries({ queryKey: ["orders"] });
+      Alert.alert(
+        paid ? "Order placed" : "Payment received",
+        paid
+          ? "Thank you! Your order is confirmed."
+          : "Your order is being confirmed. It will appear in the Orders tab shortly.",
+      );
 
       reset();
       onClose();

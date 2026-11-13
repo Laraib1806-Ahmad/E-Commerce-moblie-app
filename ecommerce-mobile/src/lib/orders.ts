@@ -17,6 +17,10 @@ export type Order = {
   items: OrderItem[];
 };
 
+export function fetchOrder(orderId: number) {
+  return authFetch<Order>(`/orders/${orderId}`);
+}
+
 // Sends the logged in user's Supabase token with every request.
 async function authFetch<T>(path: string, init: RequestInit = {}): Promise<T> {
   const { data } = await supabase.auth.getSession();
@@ -44,9 +48,17 @@ export function createCheckout(
     { method: "POST", body: JSON.stringify({ items, shipping }) },
   );
 }
-
-export function confirmOrder(orderId: number) {
-  return authFetch<Order>(`/orders/${orderId}/confirm`, { method: "POST" });
+export async function waitUntilPaid(
+  orderId: number,
+  tries = 10,
+  delayMs = 1000,
+) {
+  for (let i = 0; i < tries; i++) {
+    const order = await fetchOrder(orderId);
+    if (order.status === "paid") return true;
+    await new Promise((resolve) => setTimeout(resolve, delayMs));
+  }
+  return false;
 }
 
 export function fetchOrders() {

@@ -1,6 +1,7 @@
 import "dotenv/config";
 import "reflect-metadata";
 import express from "express";
+import { stripeWebhookHandler } from "./routes/stripeWebhook";
 import cors from "cors";
 import { AppDataSource } from "./data-source";
 import uploadRoutes from "./routes/uploads";
@@ -14,8 +15,14 @@ import "./workers/importWorker";
 const app = express();
 app.use(cors());
 // app.use(cors({ origin: "http://localhost:3000" }));
-app.use(express.json());
 
+app.post(
+  "/stripe/webhook",
+  express.raw({ type: "application/json" }),
+  stripeWebhookHandler,
+);
+
+app.use(express.json());
 app.use("/upload", uploadRoutes);
 app.use("/products", productRoutes);
 app.use("/categories", categoryRoutes);

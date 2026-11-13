@@ -1,14 +1,12 @@
 import { Router } from "express";
-import Stripe from "stripe";
 import { In } from "typeorm";
 import { AppDataSource } from "../data-source";
 import { Order } from "../entities/Order";
 import { OrderItem } from "../entities/OrderItem";
 import { Product } from "../entities/Product";
 import { AuthedRequest, requireAuth } from "../middleware/auth";
-
+import { stripe } from "../stripe";
 const router = Router();
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
 const orderRepository = AppDataSource.getRepository(Order);
 const productRepository = AppDataSource.getRepository(Product);
 
@@ -99,8 +97,8 @@ router.post("/checkout", async (req, res) => {
   }
 });
 
-// 2. After the payment sheet succeeds, ask Stripe directly if the money arrived.
-router.post("/:id/confirm", async (req, res) => {
+// Read one order. The app checks this after paying, while it waits for the webhook.
+router.get("/:id", async (req, res) => {
   try {
     const user = (req as AuthedRequest).user!;
     const id = Number(req.params.id);
@@ -113,25 +111,10 @@ router.post("/:id/confirm", async (req, res) => {
       where: { id, userId: user.id },
       relations: { items: true },
     });
-    if (!order || !order.paymentIntentId) {
+    if (!order) {
       res.status(404).json({ message: "Order not found" });
       return;
     }
-    if (order.status === "paid") {
-      res.json(order);
-      return;
-    }
-
-    const intent = await stripe.paymentIntents.retrieve(order.paymentIntentId);
-    if (intent.status !== "succeeded") {
-      res
-        .status(400)
-        .json({ message: `Payment not completed (${intent.status})` });
-      return;
-    }
-
-    order.status = "paid";
-    await orderRepository.save(order);
     res.json(order);
   } catch (error: any) {
     res.status(500).json({ message: error.message });

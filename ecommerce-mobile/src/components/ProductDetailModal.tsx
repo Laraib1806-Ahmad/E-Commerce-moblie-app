@@ -13,6 +13,7 @@ import { addToCart } from "../store/cartSlice";
 import { useAppDispatch } from "../store/hooks";
 import { toggleFavorite } from "../store/productsSlice";
 import { Product } from "../types/product";
+import { shareProduct } from "../lib/share";
 export function ProductDetailModal({
   product,
   visible,
@@ -55,6 +56,9 @@ export function ProductDetailModal({
               <Text style={styles.favIcon}>{fav ? "❤️" : "🤍"}</Text>
             </TouchableOpacity>
           </View>
+          <TouchableOpacity onPress={() => product && shareProduct(product)}>
+            <Text>Share</Text>
+          </TouchableOpacity>
 
           <Text style={styles.brand}>
             {product.brand.name} · {product.brand.country}

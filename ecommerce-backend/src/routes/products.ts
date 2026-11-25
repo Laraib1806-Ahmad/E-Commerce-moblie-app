@@ -8,9 +8,7 @@ import { clearProductsCache } from "../redis";
 import { Brand } from "../entities/Brand";
 import { importQueue } from "../queues/importQueue";
 import { logAudit } from "../utils/auditLog";
-import { isSetIterator } from "util/types";
-import { JoinAttribute } from "typeorm/query-builder/JoinAttribute.js";
-import { arraySync } from "node:stream/iter";
+
 const importUpload = multer({ dest: "uploads/imports/" });
 
 const upload = multer({ storage: multer.memoryStorage() });
@@ -22,7 +20,20 @@ const SORTABLE_FIELDS: Record<string, string> = {
   price: "product.price",
   rating: "product.rating",
 };
+const TRACKED_FIELDS = [
+  "productName",
+  "category",
+  "price",
+  "rating",
+  "description",
+  "favorite",
+  "barcode",
+] as const;
 
+const isSame = (field: string, a: unknown, b: unknown) =>
+  field === "price" || field === "rating"
+    ? Number(a) === Number(b)
+    : (a ?? null) === (b ?? null);
 router.get("/", async (req, res) => {
   try {
     const page = Math.max(1, parseInt(req.query.page as string) || 1);
@@ -135,6 +146,7 @@ router.post("/", upload.single("image"), async (req, res) => {
       price: Number(price),
       rating: Number(rating),
       description,
+      barcode: req.body.barcode?.trim() || null,
       favorite: favorite === "true" || favorite === true,
       imageUrl,
       brand,
@@ -147,6 +159,30 @@ router.post("/", upload.single("image"), async (req, res) => {
     });
 
     res.status(201).json(saved);
+  } catch (error: any) {
+    if (error.code === "23505") {
+      res.status(409).json({
+        message: "This barcode is already used by another product",
+      });
+      return;
+    }
+
+    res.status(500).json({ message: error.message });
+  }
+});
+
+// Find one product by its barcode (used by the scanner in the app).
+router.get("/barcode/:code", async (req, res) => {
+  try {
+    const product = await productRepository.findOne({
+      where: { barcode: req.params.code },
+      relations: { brand: true },
+    });
+    if (!product) {
+      res.status(404).json({ message: "Product not found" });
+      return;
+    }
+    res.json(product);
   } catch (error: any) {
     res.status(500).json({ message: error.message });
   }
@@ -174,25 +210,39 @@ router.put("/:id", async (req, res) => {
     if (!product) return res.status(404).json({ message: "Product not found" });
 
     const before = { ...product };
-    productRepository.merge(product, req.body);
+    const { barcode, ...rest } = req.body;
+    productRepository.merge(product, rest);
+    if (barcode !== undefined) {
+      product.barcode =
+        typeof barcode === "string" && barcode.trim() ? barcode.trim() : null;
+    }
     const updated = await productRepository.save(product);
 
     await clearProductsCache();
-    await logAudit("UPDATE", "Product", updated.id, {
-      before: {
-        price: before.price,
-        rating: before.rating,
-        favorite: before.favorite,
-      },
-      after: {
-        price: updated.price,
-        rating: updated.rating,
-        favorite: updated.favorite,
-      },
-    });
+    const beforeChanged: Record<string, unknown> = {};
+    const afterChanged: Record<string, unknown> = {};
+    for (const field of TRACKED_FIELDS) {
+      if (!isSame(field, before[field], updated[field])) {
+        beforeChanged[field] = before[field];
+        afterChanged[field] = updated[field];
+      }
+    }
+    if (Object.keys(afterChanged).length > 0) {
+      await logAudit("UPDATE", "Product", updated.id, {
+        before: beforeChanged,
+        after: afterChanged,
+      });
+    }
 
     res.json(updated);
   } catch (error: any) {
+    if (error.code === "23505") {
+      res.status(409).json({
+        message: "This barcode is already used by another product",
+      });
+      return;
+    }
+
     res.status(400).json({ message: error.message });
   }
 });
@@ -250,4 +300,5 @@ router.get("/import/:jobId/status", async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 });
+
 export default router;

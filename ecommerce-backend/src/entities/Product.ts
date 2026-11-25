@@ -50,4 +50,7 @@ export class Product {
 
   @UpdateDateColumn()
   updatedAt!: Date;
+
+  @Column({ type: "varchar", nullable: true, unique: true })
+  barcode!: string | null;
 }

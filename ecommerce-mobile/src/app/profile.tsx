@@ -2,8 +2,11 @@ import { AppColors as Colors } from "@/constants/colors";
 import { signOut } from "@/lib/auth";
 import { useAppSelector } from "@/store/hooks";
 import { useRouter } from "expo-router";
-import { StyleSheet, Text, TouchableOpacity } from "react-native";
+import { Pressable, StyleSheet, Text, TouchableOpacity } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { AvatarPicker } from "../components/AvatarPicker";
+import { useState } from "react";
+import { ThemedText } from "../components/themed-text";
 
 export default function ProfileScreen() {
   const user = useAppSelector((s) => s.auth.user);
@@ -11,6 +14,7 @@ export default function ProfileScreen() {
 
   return (
     <SafeAreaView style={styles.container} edges={["top"]}>
+      <AvatarPicker />
       <Text style={styles.name}>{user?.name}</Text>
       <Text style={styles.email}>{user?.email}</Text>
 

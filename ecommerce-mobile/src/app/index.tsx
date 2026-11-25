@@ -22,11 +22,13 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { ScannerModal } from "../components/ScannerModal";
 export default function HomeScreen() {
   const dispatch = useAppDispatch();
   const filters = useAppSelector((s) => s.filters);
 
   const [filtersVisible, setFiltersVisible] = useState(false);
+  const [scannerVisible, setScannerVisible] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
 
   const {
@@ -85,6 +87,13 @@ export default function HomeScreen() {
           onChangeText={(text) => dispatch(setSearch(text))}
           style={styles.search}
         />
+
+        <TouchableOpacity
+          style={[styles.filterBtn, styles.scanBtn]}
+          onPress={() => setScannerVisible(true)}
+        >
+          <Text style={styles.filterBtnText}>Scanner</Text>
+        </TouchableOpacity>
         <TouchableOpacity
           style={styles.filterBtn}
           onPress={() => setFiltersVisible(true)}
@@ -142,6 +151,11 @@ export default function HomeScreen() {
         visible={!!selectedProduct}
         onClose={() => setSelectedProduct(null)}
       />
+      <ScannerModal
+        visible={scannerVisible}
+        onClose={() => setScannerVisible(false)}
+        onFound={(product) => setSelectedProduct(product)}
+      />
     </SafeAreaView>
   );
 }
@@ -173,6 +187,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   filterBtnText: { color: "#fff", fontWeight: "700" },
+  scanBtn: { marginRight: 10 },
   error: { color: "#C0392B", textAlign: "center", marginTop: 20 },
   empty: { textAlign: "center", color: Colors.mutedText, marginTop: 40 },
   centerLoader: { position: "absolute", top: "40%", left: 0, right: 0 },

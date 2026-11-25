@@ -8,7 +8,7 @@ import {
 import { Brand, Product } from "../types/product";
 
 export const BASE_URL =
-  process.env.EXPO_PUBLIC_API_URL ?? "http://192.168.100.187:9999";
+  process.env.EXPO_PUBLIC_API_URL ?? "http://192.168.100.209:9999";
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
   const res = await fetch(`${BASE_URL}${path}`, init);
@@ -55,6 +55,7 @@ export interface ProductInput {
   rating: number;
   description: string;
   favorite: boolean;
+  barcode: string;
 }
 
 export async function createProduct(
@@ -67,6 +68,7 @@ export async function createProduct(
   form.append("price", String(input.price));
   form.append("rating", String(input.rating));
   form.append("description", input.description);
+  form.append("barcode", input.barcode);
   form.append("favorite", String(input.favorite));
   form.append("brandName", input.brandName);
   if (image) await appendImageFile(form, "image", image);

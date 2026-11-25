@@ -14,4 +14,5 @@ export interface Product {
   description: string;
   favorite: boolean;
   brand: Brand;
+  barcode?: string | null;
 }

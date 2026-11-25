@@ -4,6 +4,7 @@ import { clearCart } from "@/store/cartSlice";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Controller, useForm } from "react-hook-form";
+import { ContactPickerModal } from "./ContactPickerModal";
 import {
   Alert,
   KeyboardAvoidingView,
@@ -46,11 +47,12 @@ export function CheckoutModal({
   const [paying, setPaying] = useState(false);
   const items = useAppSelector((s) => s.cart.items);
   const total = items.reduce((sum, i) => sum + i.product.price * i.quantity, 0);
-
+  const [contactsVisible, setcontactsVisible] = useState(false);
   const {
     control,
     handleSubmit,
     reset,
+    setValue,
     formState: { errors },
   } = useForm<CheckoutForm>({
     resolver: zodResolver(checkoutSchema),
@@ -159,9 +161,20 @@ export function CheckoutModal({
                 {paying ? "Processing..." : `Pay $${total.toFixed(2)}`}
               </Text>
             </TouchableOpacity>
+
+            <TouchableOpacity onPress={() => setcontactsVisible(true)}>
+              <Text>Pick from contacts</Text>
+            </TouchableOpacity>
           </ScrollView>
         </KeyboardAvoidingView>
       </SafeAreaView>
+      <ContactPickerModal
+        visible={contactsVisible}
+        onClose={() => setcontactsVisible(false)}
+        onPick={(name, phone) =>
+          setValue("phone", phone, { shouldValidate: true })
+        }
+      />
     </Modal>
   );
 }

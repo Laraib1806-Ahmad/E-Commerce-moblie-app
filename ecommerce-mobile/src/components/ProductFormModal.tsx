@@ -39,6 +39,7 @@ export function ProductFormModal({
 }) {
   const isEdit = !!product;
   const [name, setName] = useState("");
+  const [barcode, setBarcode] = useState("");
   const [category, setCategory] = useState("");
   const [brandName, setBrandName] = useState("");
   const [price, setPrice] = useState("");
@@ -54,6 +55,7 @@ export function ProductFormModal({
   useEffect(() => {
     if (!visible) return;
     setName(product?.productName ?? "");
+    setBarcode(product?.barcode ?? "");
     setCategory(product?.category ?? "");
     setBrandName(product?.brand.name ?? "");
     setPrice(product ? String(product.price) : "");
@@ -117,6 +119,7 @@ export function ProductFormModal({
         rating: ratingNum,
         description: description.trim(),
         favorite,
+        barcode: barcode.toWellFormed(),
       };
       if (product) {
         let imageUrl = product.imageUrl;
@@ -170,6 +173,15 @@ export function ProductFormModal({
               value={name}
               onChangeText={setName}
               placeholder="iPhone 13"
+            />
+
+            <Text style={styles.label}>Barcode (optional)</Text>
+            <TextInput
+              style={styles.input}
+              value={barcode}
+              onChangeText={setBarcode}
+              placeholder="8901234567890"
+              autoCapitalize="none"
             />
 
             <Text style={styles.label}>Category</Text>

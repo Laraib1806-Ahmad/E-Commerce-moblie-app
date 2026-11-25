@@ -15,6 +15,10 @@ export type Order = {
   status: "pending" | "paid";
   createdAt: string;
   items: OrderItem[];
+  fullName?: string;
+  phone?: string;
+  address?: string;
+  city?: string;
 };
 
 export function fetchOrder(orderId: number) {
